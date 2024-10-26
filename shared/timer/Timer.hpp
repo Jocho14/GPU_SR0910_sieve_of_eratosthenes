@@ -13,9 +13,9 @@ public:
     void reset();
 
 private:
-    std::chrono::time_point<std::chrono::high_resolution_clock> startTime;
-    std::chrono::time_point<std::chrono::high_resolution_clock> endTime;
-    bool running;
+    std::chrono::time_point<std::chrono::high_resolution_clock> _startTime;
+    std::chrono::time_point<std::chrono::high_resolution_clock> _endTime;
+    bool _running;
 };
 
 #endif TIMER_HPP

@@ -1,6 +1,6 @@
-#include "Timer.h"
+#include "Timer.hpp"
 
-Timer::Timer() : running(false), startTime(), endTime(){}
+Timer::Timer() : _running(false), _startTime(), _endTime(){}
 
 void Timer::start() {
     startTime = std::chrono::high_resolution_clock::now();
@@ -8,24 +8,24 @@ void Timer::start() {
 }
 
 void Timer::stop() {
-    if (running) {
-        endTime = std::chrono::high_resolution_clock::now();
-        running = false;
+    if (_running) {
+        _endTime = std::chrono::high_resolution_clock::now();
+        _running = false;
     }
 }
 
 double Timer::getTime() const {
-    if (running) {
+    if (_running) {
         auto currentTime = std::chrono::high_resolution_clock::now();
-        return std::chrono::duration<double, std::milli>(currentTime - startTime).count();
+        return std::chrono::duration<double, std::milli>(currentTime - _startTime).count();
     } else {
-        return std::chrono::duration<double, std::milli>(endTime - startTime).count();
+        return std::chrono::duration<double, std::milli>(_endTime - _startTime).count();
     }
 }
 
 void Timer::reset() {
-    startTime = std::chrono::high_resolution_clock::now();
-    endTime = startTime;
-    running = false;
+    _startTime = std::chrono::high_resolution_clock::now();
+    _endTime = _startTime;
+    _running = false;
 }
 
