@@ -1,5 +1,5 @@
-#ifndef TIMER_H
-#define TIMER_H
+#ifndef TIMER_HPP
+#define TIMER_HPP
 
 #include <chrono>
 
@@ -10,7 +10,7 @@ public:
     void start();
     void stop();
     double getTime() const;
-    void resetTime();
+    void reset();
 
 private:
     std::chrono::time_point<std::chrono::high_resolution_clock> startTime;
@@ -18,4 +18,5 @@ private:
     bool running;
 };
 
-#endif 
+#endif TIMER_HPP
+

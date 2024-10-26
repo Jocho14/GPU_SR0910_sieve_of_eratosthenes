@@ -1,6 +1,6 @@
 #include "Timer.h"
 
-Timer::Timer() : running(false) {}
+Timer::Timer() : running(false), startTime(), endTime(){}
 
 void Timer::start() {
     startTime = std::chrono::high_resolution_clock::now();
@@ -23,8 +23,9 @@ double Timer::getTime() const {
     }
 }
 
-void Timer::resetTime() {
+void Timer::reset() {
     startTime = std::chrono::high_resolution_clock::now();
     endTime = startTime;
     running = false;
 }
+
