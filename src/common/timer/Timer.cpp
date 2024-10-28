@@ -1,6 +1,6 @@
 #include "Timer.hpp"
 
-Timer::Timer() : running_(false), startTime_(), endTime_(){}
+Timer::Timer() : running_(false), startTime_(), endTime_() {}
 
 void Timer::start() {
     startTime_ = std::chrono::high_resolution_clock::now();
@@ -18,7 +18,8 @@ double Timer::getTime() const {
     if (running_) {
         auto currentTime = std::chrono::high_resolution_clock::now();
         return std::chrono::duration<double, std::milli>(currentTime - startTime_).count();
-    } else {
+    }
+    else {
         return std::chrono::duration<double, std::milli>(endTime_ - startTime_).count();
     }
 }
@@ -28,4 +29,3 @@ void Timer::reset() {
     endTime_ = startTime_;
     running_ = false;
 }
-
