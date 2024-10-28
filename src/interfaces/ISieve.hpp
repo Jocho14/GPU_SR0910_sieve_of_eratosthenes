@@ -1,6 +1,10 @@
+#ifndef I_SIEVE
+#define I_SIEVE
+
 #include <vector>
 
-class ISieve {
+class ISieve 
+{
 public:
     virtual ~ISieve() = default;
 
@@ -9,3 +13,5 @@ public:
     virtual const std::vector<unsigned int>& getPrimes() const = 0;
     virtual void collectPrimes() = 0;
 };
+
+#endif  // I_SIEVE
