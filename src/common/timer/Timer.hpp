@@ -3,10 +3,11 @@
 
 #include <chrono>
 
-class Timer {
+class Timer 
+{
 public:
-
     Timer();
+
     void start();
     void stop();
     double getTime() const;
@@ -18,5 +19,4 @@ private:
     bool running_;
 };
 
-#endif TIMER_HPP
-
+#endif  // TIMER_HPP
