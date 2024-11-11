@@ -31,6 +31,12 @@ void MultiCpuSieve::computePrimes() {
             {
                 unsigned int start = number * number + t * chunkSize;
                 unsigned int end = std::min(start + chunkSize, maxLimit_ + 1);
+
+                if (start % number != 0)
+                {
+                    start += number - (start % number);
+                }
+
                 threads.emplace_back(&MultiCpuSieve::markMultiplies, this, number, start, end);
             }
 
@@ -61,11 +67,11 @@ const std::vector<unsigned int>& MultiCpuSieve::getPrimes() const
 void MultiCpuSieve::collectPrimes() 
 {
     primes_.clear();
-    for (unsigned int i = 2; i <= maxLimit_; ++i)
+    for (unsigned int number = 2; number <= maxLimit_; ++number)
     {
-        if (isPrime_[i])
+        if (isPrime_[number])
         {
-            primes_.push_back(i);
+            primes_.push_back(number);
         }
     }
 }

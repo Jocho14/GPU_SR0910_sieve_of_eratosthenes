@@ -28,5 +28,11 @@ int main()
 
 	timer->reset();
 
+	single->collectPrimes();
+	multi->collectPrimes();
+
+	std::cout << "NUM OF PRIMES FOR SINGLE: " << single->getPrimes().size() << std::endl;
+	std::cout << "NUM OF PRIMES FOR MULTI: " << multi->getPrimes().size();
+
 	return 0;
 }
