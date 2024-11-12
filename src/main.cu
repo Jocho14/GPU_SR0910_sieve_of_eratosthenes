@@ -18,7 +18,7 @@
 int main() {
     auto timer = std::make_shared<Timer>();
 
-    // Test dla SingleCpuSieve
+    // Test for SingleCpuSieve
     auto single = std::make_shared<SingleCpuSieve>(1000000);
     timer->start();
     single->computePrimes();
@@ -27,7 +27,7 @@ int main() {
 
     timer->reset();
 
-    // Test dla MultiCpuSieve
+    // Test for MultiCpuSieve
     auto multi = std::make_shared<MultiCpuSieve>(1000000);
     timer->start();
     multi->computePrimes();
@@ -36,7 +36,7 @@ int main() {
 
     timer->reset();
 
-    // Test dla GpuSieve
+    // Test for GpuSieve
     auto gpuSieve = std::make_shared<GpuSieve>();
     gpuSieve->setMaxLimit(1000000);
     timer->start();
@@ -44,17 +44,17 @@ int main() {
     timer->stop();
     std::cout << "Time taken to compute primes on GPU: " << timer->getTime() << "ms" << std::endl;
 
-    // Zbieranie wyników
+    // results
     single->collectPrimes();
     multi->collectPrimes();
     gpuSieve->collectPrimes();
 
-    // Wyświetlanie liczby liczb pierwszych
+    
     std::cout << "NUM OF PRIMES FOR SINGLE: " << single->getPrimes().size() << std::endl;
     std::cout << "NUM OF PRIMES FOR MULTI: " << multi->getPrimes().size() << std::endl;
     std::cout << "NUM OF PRIMES FOR GPU: " << gpuSieve->getPrimes().size() << std::endl;
 
-    // Porównanie wyników między implementacjami
+    // Comparing results
     if (single->getPrimes().size() == multi->getPrimes().size() &&
         multi->getPrimes().size() == gpuSieve->getPrimes().size()) {
         std::cout << "All implementations produced the same number of primes." << std::endl;
