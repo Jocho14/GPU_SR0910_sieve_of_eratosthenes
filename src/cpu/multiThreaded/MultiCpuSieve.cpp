@@ -20,29 +20,30 @@ void MultiCpuSieve::setMaxLimit(unsigned int maxLimit)
 void MultiCpuSieve::computePrimes() {
     unsigned int sqrtLimit = static_cast<unsigned int>(std::sqrt(maxLimit_));
 
-    for (unsigned int number = 2; number * number <= maxLimit_; ++number) 
+    for (unsigned int number = 2; number * number <= maxLimit_; ++number)
     {
         if (isPrime_[number])
         {
             std::vector<std::thread> threads;
-            unsigned int chunkSize = (maxLimit_ - number * number + 1) / numThreads_;
+            unsigned int range = maxLimit_ - number * number + 1;
+            unsigned int chunkSize = range / numThreads_;
+            unsigned int remainder = range % numThreads_;
 
-            for (unsigned int t = 0; t < numThreads_; ++t) 
-            {
-                unsigned int start = number * number + t * chunkSize;
-                unsigned int end = std::min(start + chunkSize, maxLimit_ + 1);
+            for (unsigned int t = 0; t < numThreads_; ++t) {
+                unsigned int start = number * number + t * chunkSize + std::min(t, remainder);
+                unsigned int end = start + chunkSize + (t < remainder ? 1 : 0);
 
-                if (start % number != 0)
-                {
+                if (start % number != 0) {
                     start += number - (start % number);
                 }
+
 
                 threads.emplace_back(&MultiCpuSieve::markMultiplies, this, number, start, end);
             }
 
-            for (auto& thread : threads) 
+            for (auto& thread : threads)
             {
-                if (thread.joinable()) 
+                if (thread.joinable())
                 {
                     thread.join();
                 }
@@ -59,12 +60,12 @@ void MultiCpuSieve::markMultiplies(unsigned int prime, unsigned int start, unsig
     }
 }
 
-const std::vector<unsigned int>& MultiCpuSieve::getPrimes() const 
+const std::vector<unsigned int>& MultiCpuSieve::getPrimes() const
 {
     return primes_;
 }
 
-void MultiCpuSieve::collectPrimes() 
+void MultiCpuSieve::collectPrimes()
 {
     primes_.clear();
     for (unsigned int number = 2; number <= maxLimit_; ++number)

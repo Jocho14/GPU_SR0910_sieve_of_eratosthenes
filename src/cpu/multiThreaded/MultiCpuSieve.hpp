@@ -1,10 +1,13 @@
+#ifndef MULTI_CPU_SIEVE
+#define MULTI_CPU_SIEVE
+
 #include <vector>
 #include <thread>
 #include <atomic>
 #include <mutex>
 #include "../../interfaces/ISieve.hpp"
 
-class MultiCpuSieve : public ISieve 
+class MultiCpuSieve : public ISieve
 {
 public:
     MultiCpuSieve(unsigned int maxLimit, unsigned int numThreads = std::thread::hardware_concurrency());
@@ -23,3 +26,5 @@ private:
 
     void markMultiplies(unsigned int prime, unsigned int start, unsigned int end);
 };
+
+#endif  // MULTI_CPU_SIEVE
