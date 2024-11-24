@@ -4,6 +4,8 @@
 #include "../interfaces/ISieve.hpp"
 #include <vector>
 #include <cstdint>
+#include <memory>
+
 
 class GpuSieve : public ISieve {
 public:
@@ -16,12 +18,12 @@ public:
     void collectPrimes() override;
 
 private:
-    unsigned int maxLimit;
-    bool* isPrimeListHost;
-    std::vector<unsigned int> primes;
+    unsigned int maxLimit_;
+    std::unique_ptr isPrimeListHost_;
+    std::vector<unsigned int> primes_;
 
-    std::vector<uint64_t> sieveCpuPrep(uint64_t maxNumber);
-    void gpuSieve(uint64_t maxNumber, const std::vector<uint64_t>& prepedPrimes);
+    std::vector<uint64_t> sieveCpuPrep_(uint64_t maxNumber);
+    void gpuSieve_(uint64_t maxNumber, const std::vector<uint64_t>& prepedPrimes);
 };
 
 #endif  // GPU_SIEVE_HPP

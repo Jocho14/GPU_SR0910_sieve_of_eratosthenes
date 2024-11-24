@@ -1,7 +1,7 @@
 #include "test.hpp"
 
+Test::Test() : timer_(std::make_shared<Timer>()) {}
 
-std::shared_ptr<Timer> Test::timer = std::make_shared<Timer>();
 
 void Test::runTest(long max, std::shared_ptr<ISieve> sieve, std::ofstream& outFile) {
     if (!sieve) {
@@ -11,11 +11,11 @@ void Test::runTest(long max, std::shared_ptr<ISieve> sieve, std::ofstream& outFi
 
     sieve->setMaxLimit(max);
 
-    timer->start(); 
+    timer_->start(); 
     sieve->computePrimes();
-    timer->stop();
+    timer_->stop();
 
-    outFile << "Time taken for n=" << max << ": " << timer->getTime() << "ms\n";
+    outFile << "Time taken for n=" << max << ": " << timer_->getTime() << "ms\n";
 
-    timer.reset();  
+    timer_.reset();  
 }

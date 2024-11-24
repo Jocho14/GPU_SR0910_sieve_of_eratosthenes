@@ -10,9 +10,10 @@
 
 class Test {
 public:
+    Test();
     void runTest(long max, std::shared_ptr<ISieve> sieve, std::ofstream& outFile);
 private:
-    static std::shared_ptr<Timer> timer;
+    std::shared_ptr<Timer> timer_;
 };
 
-#endif
+#endif // TEST_HPP

@@ -11,16 +11,10 @@ const uint64_t MAX_STRIDE = 256000000;
 int BLOCK_SIZE = 256;
 
 // Constructor: Initialize GpuSieve object with no allocated memory on the host
-GpuSieve::GpuSieve() : maxLimit(0), isPrimeListHost(nullptr) {}
+GpuSieve::GpuSieve() : maxLimit(0), isPrimeListHost_(nullptr) {}
 
 // Destructor: Free host memory if allocated
-GpuSieve::~GpuSieve() {
-    // Free host memory
-    if (isPrimeListHost) {
-        free(isPrimeListHost);
-        isPrimeListHost = nullptr;
-    }
-}
+GpuSieve::~GpuSieve() {}
 
 // Set the maximum limit for prime computation
 void GpuSieve::setMaxLimit(unsigned int maxLimit) {
@@ -47,7 +41,7 @@ void GpuSieve::collectPrimes() {
     primes.clear();
     // Traverse isPrimeListHost to collect primes up to maxLimit
     for (uint64_t i = 2; i <= maxLimit; i++) {
-        if (isPrimeListHost[i]) {
+        if (isPrimeListHost_[i]) {
             primes.push_back(i);
         }
     }
@@ -94,14 +88,14 @@ void GpuSieve::gpuSieve(uint64_t maxNumber, const std::vector<uint64_t>& prepedP
     uint64_t* prepedPrimesDevice = nullptr;
 
     // Allocate and initialize memory on host and device
-    isPrimeListHost = (bool*)malloc(maxNumber * sizeof(bool));
-    std::memset(isPrimeListHost, true, maxNumber * sizeof(bool));
+    isPrimeListHost_ = std::make_unique<bool[]>(maxNumber);
+    std::memset(isPrimeListHost_.get(), true, maxNumber * sizeof(bool));
     cudaMalloc(&isPrimeListDevice, maxNumber * sizeof(bool));
-    cudaMemcpy(isPrimeListDevice, isPrimeListHost, maxNumber * sizeof(bool), cudaMemcpyHostToDevice);
+    cudaMemcpy(isPrimeListDevice, isPrimeListHost_.get(), maxNumber * sizeof(bool), cudaMemcpyHostToDevice);
 
     // Prepare and copy the list of initial primes to device
     uint64_t prepedPrimesSize = prepedPrimes.size();
-    uint64_t* prepedPrimesHost = (uint64_t*)malloc(prepedPrimesSize * sizeof(uint64_t));
+    auto prepedPrimesHost = std::make_unique<uint64_t[]>(prepedPrimesSize);
     memcpy(prepedPrimesHost, prepedPrimes.data(), prepedPrimesSize * sizeof(uint64_t));
     cudaMalloc(&prepedPrimesDevice, prepedPrimesSize * sizeof(uint64_t));
     cudaMemcpy(prepedPrimesDevice, prepedPrimesHost, prepedPrimesSize * sizeof(uint64_t), cudaMemcpyHostToDevice);
@@ -117,10 +111,8 @@ void GpuSieve::gpuSieve(uint64_t maxNumber, const std::vector<uint64_t>& prepedP
     cudaDeviceSynchronize();
 
     // Copy results back to the host
-    cudaMemcpy(isPrimeListHost, isPrimeListDevice, maxNumber * sizeof(bool), cudaMemcpyDeviceToHost);
+    cudaMemcpy(isPrimeListHost_.get(), isPrimeListDevice, maxNumber * sizeof(bool), cudaMemcpyDeviceToHost);
 
-    // Clean up memory
-    free(prepedPrimesHost);
     cudaFree(isPrimeListDevice);
     cudaFree(prepedPrimesDevice);
 }
