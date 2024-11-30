@@ -11,38 +11,38 @@ const uint64_t MAX_STRIDE = 256000000;
 int BLOCK_SIZE = 256;
 
 // Constructor: Initialize GpuSieve object with no allocated memory on the host
-GpuSieve::GpuSieve() : maxLimit(0), isPrimeListHost_(nullptr) {}
+GpuSieve::GpuSieve() : maxLimit_(0), isPrimeListHost_(nullptr) {}
 
 // Destructor: Free host memory if allocated
 GpuSieve::~GpuSieve() {}
 
 // Set the maximum limit for prime computation
 void GpuSieve::setMaxLimit(unsigned int maxLimit) {
-    this->maxLimit = maxLimit;
+    maxLimit_ = maxLimit;
 }
 
 // Main function to compute primes up to maxLimit
 void GpuSieve::computePrimes() {
     // Prepare initial list of small primes on CPU using a simple sieve
-    std::vector<uint64_t> prepedPrimes = sieveCpuPrep(std::sqrt(maxLimit));
+    std::vector<uint64_t> prepedPrimes = sieveCpuPrep(std::sqrt(maxLimit_));
 
     // Launch GPU sieve to find all primes up to maxLimit
-    gpuSieve(maxLimit, prepedPrimes);
+    gpuSieve(maxLimit_, prepedPrimes);
 }
 
 // Retrieve the list of primes found
 const std::vector<unsigned int>& GpuSieve::getPrimes() const {
-    return primes;
+    return primes_;
 }
 
 // Collect primes from the result list on the host
 void GpuSieve::collectPrimes() {
     // Clear any existing primes in the list
-    primes.clear();
+    primes_.clear();
     // Traverse isPrimeListHost to collect primes up to maxLimit
-    for (uint64_t i = 2; i <= maxLimit; i++) {
+    for (uint64_t i = 2; i <= maxLimit_; i++) {
         if (isPrimeListHost_[i]) {
-            primes.push_back(i);
+            primes_.push_back(i);
         }
     }
 }
