@@ -5,8 +5,8 @@
 #include <memory>
 #include <fstream>
 
-#include "common/timer/Timer.hpp"
-#include "interfaces/ISieve.hpp"
+#include "../common/timer/Timer.hpp"
+#include "../interfaces/ISieve.hpp"
 
 class Test {
 public:
