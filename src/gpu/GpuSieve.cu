@@ -24,10 +24,10 @@ void GpuSieve::setMaxLimit(unsigned int maxLimit) {
 // Main function to compute primes up to maxLimit
 void GpuSieve::computePrimes() {
     // Prepare initial list of small primes on CPU using a simple sieve
-    std::vector<uint64_t> prepedPrimes = sieveCpuPrep(std::sqrt(maxLimit_));
+    std::vector<uint64_t> prepedPrimes = sieveCpuPrep_(std::sqrt(maxLimit_));
 
     // Launch GPU sieve to find all primes up to maxLimit
-    gpuSieve(maxLimit_, prepedPrimes);
+    gpuSieve_(maxLimit_, prepedPrimes);
 }
 
 // Retrieve the list of primes found
@@ -48,7 +48,7 @@ void GpuSieve::collectPrimes() {
 }
 
 // Prepare a list of initial small primes on the CPU (sieve of Eratosthenes)
-std::vector<uint64_t> GpuSieve::sieveCpuPrep(uint64_t maxNumber) {
+std::vector<uint64_t> GpuSieve::sieveCpuPrep_(uint64_t maxNumber) {
     std::vector<bool> isPrimeList(maxNumber, true);
     std::vector<uint64_t> prepedPrimes;
 
@@ -83,7 +83,7 @@ __global__ void gpuSieveKernel(uint64_t maxNumber, bool* isPrimeList, uint64_t* 
 }
 
 // Function to launch GPU sieve with prepared primes
-void GpuSieve::gpuSieve(uint64_t maxNumber, const std::vector<uint64_t>& prepedPrimes) {
+void GpuSieve::gpuSieve_(uint64_t maxNumber, const std::vector<uint64_t>& prepedPrimes) {
     bool* isPrimeListDevice = nullptr;
     uint64_t* prepedPrimesDevice = nullptr;
 
@@ -96,9 +96,9 @@ void GpuSieve::gpuSieve(uint64_t maxNumber, const std::vector<uint64_t>& prepedP
     // Prepare and copy the list of initial primes to device
     uint64_t prepedPrimesSize = prepedPrimes.size();
     auto prepedPrimesHost = std::make_unique<uint64_t[]>(prepedPrimesSize);
-    memcpy(prepedPrimesHost, prepedPrimes.data(), prepedPrimesSize * sizeof(uint64_t));
+    memcpy(prepedPrimesHost.get(), prepedPrimes.data(), prepedPrimesSize * sizeof(uint64_t));
     cudaMalloc(&prepedPrimesDevice, prepedPrimesSize * sizeof(uint64_t));
-    cudaMemcpy(prepedPrimesDevice, prepedPrimesHost, prepedPrimesSize * sizeof(uint64_t), cudaMemcpyHostToDevice);
+    cudaMemcpy(prepedPrimesDevice, prepedPrimesHost.get(), prepedPrimesSize * sizeof(uint64_t), cudaMemcpyHostToDevice);
 
     // Configure blocks and threads for kernel launch
     uint64_t numberOfBlocks = (maxNumber + BLOCK_SIZE - 1) / BLOCK_SIZE;

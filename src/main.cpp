@@ -15,6 +15,7 @@ int main()
 
 	auto single = std::make_shared<SingleCpuSieve>(42949);
 	auto multi = std::make_shared<MultiCpuSieve>(42949);
+	auto gpu = std::make_shared<GpuSieve>(42949);
 	std::ofstream outFileSingleTime("singleTime.csv");
 	std::ofstream outFileMultiTime("multiTime.csv");
 

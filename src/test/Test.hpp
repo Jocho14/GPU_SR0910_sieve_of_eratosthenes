@@ -12,7 +12,7 @@ class Test {
 public:
     Test();
     void runTimeTest(unsigned int max, std::shared_ptr<ISieve> sieve, std::ofstream& outFile);
-    void runUsageTest(unsigned int max, std::shared_ptr<ISieve> sieve, std::ofstream& outFile);
+    void runUsageTest(unsigned int max, std::shared_ptr<ISieve> sieve, std::ofstream& outFile, bool monitor_gpu);
 private:
     std::shared_ptr<Timer> timer_;
 };

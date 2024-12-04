@@ -5,63 +5,69 @@
 #include <vector>
 #include <chrono>
 #include <cuda_runtime.h>
-
-#include "iostream"
 #include "memory"
+#include <string>
 
 #include "common/timer/Timer.hpp"
 
 #include "cpu/singleThreaded/SingleCpuSieve.hpp"
 #include "cpu/multiThreaded/MultiCpuSieve.hpp"
 #include "gpu/GpuSieve.hpp"
+#include "../src/test/Test.hpp"
 
 int main() {
-    auto timer = std::make_shared<Timer>();
 
-    // Test for SingleCpuSieve
-    auto single = std::make_shared<SingleCpuSieve>(1000000);
-    timer->start();
-    single->computePrimes();
-    timer->stop();
-    std::cout << "Time taken to compute primes on single thread: " << timer->getTime() << "ms" << std::endl;
+	auto single = std::make_shared<SingleCpuSieve>(42949);
+	auto multi = std::make_shared<MultiCpuSieve>(42949);
+	auto gpu = std::make_shared<GpuSieve>();
+	/*auto gpuNcite = std::make_shared<>();*/
 
-    timer->reset();
+	std::ofstream outFileSingleTime("singleTime.csv");
+	std::ofstream outFileMultiTime("multiTime.csv");
+	std::ofstream outFileGpuTime("GpuTime.csv");
+	std::ofstream outFileGpuTimeNcite("GpuTimeNcite.csv");
 
-    // Test for MultiCpuSieve
-    auto multi = std::make_shared<MultiCpuSieve>(1000000);
-    timer->start();
-    multi->computePrimes();
-    timer->stop();
-    std::cout << "Time taken to compute primes on multi threads: " << timer->getTime() << "ms" << std::endl;
+	std::ofstream outFileSingleUsage("singleUsage.csv");
+	std::ofstream outFileMultiUsage("multiUsage.csv");
+	std::ofstream outFileGpuUsage("GpuUsage.csv");
+	std::ofstream outFileGpuUsageNcite("GpuUsageNcite.csv");
 
-    timer->reset();
+	/*const unsigned int Max = 4294967285;*/
+	const unsigned int Max = 42949;
 
-    // Test for GpuSieve
-    auto gpuSieve = std::make_shared<GpuSieve>();
-    gpuSieve->setMaxLimit(1000000);
-    timer->start();
-    gpuSieve->computePrimes();
-    timer->stop();
-    std::cout << "Time taken to compute primes on GPU: " << timer->getTime() << "ms" << std::endl;
+	auto test = std::make_shared<Test>();
 
-    // results
-    single->collectPrimes();
-    multi->collectPrimes();
-    gpuSieve->collectPrimes();
+	std::cout << "start time test for singlecpusieve...\n";
+	test->runTimeTest(Max, single, outFileSingleTime);
+	std::cout << "stop time test for singlecpusieve.\n";
+	
+	std::cout << "start time test for multicpusieve...\n";
+	test->runTimeTest(Max, multi, outFileMultiTime);
+	std::cout << "stop time test for multicpusieve.\n";
 
-    
-    std::cout << "NUM OF PRIMES FOR SINGLE: " << single->getPrimes().size() << std::endl;
-    std::cout << "NUM OF PRIMES FOR MULTI: " << multi->getPrimes().size() << std::endl;
-    std::cout << "NUM OF PRIMES FOR GPU: " << gpuSieve->getPrimes().size() << std::endl;
+	std::cout << "start time test for gpusieve...\n";
+	test->runTimeTest(Max, gpu, outFileGpuTime);
+	std::cout << "stop time test for gpusieve.\n";
 
-    // Comparing results
-    if (single->getPrimes().size() == multi->getPrimes().size() &&
-        multi->getPrimes().size() == gpuSieve->getPrimes().size()) {
-        std::cout << "All implementations produced the same number of primes." << std::endl;
-    }
-    else {
-        std::cout << "Mismatch in the number of primes found by different implementations." << std::endl;
-    }
+	/*std::cout << "start time test for gpusieve after ncite...\n";
+	test->runTimeTest(Max, gpuNcite, outFileGpuTimeNcite);
+	std::cout << "stop time test for gpusieve after ncite.\n";*/
 
-    return 0;
+	std::cout << "start usage test for singlecpusieve...\n";
+	test->runUsageTest(Max, single, outFileSingleUsage, false);
+	std::cout << "stop usage test for singlecpusieve.\n";
+
+	std::cout << "start usage test for multicpusieve...\n";
+	test->runUsageTest(Max, multi, outFileMultiUsage, false);
+	std::cout << "stop usage test for multicpusieve.\n";
+
+	//std::cout << "Start usage test for GpuSieve...\n";
+	//test->runUsageTest(Max, gpu, outFileGpuUsage, true);
+	//std::cout << "Stop usage test for GpuSieve.\n";
+
+	/*std::cout << "start time test for gpusieve after ncite...\n";
+	test->runTimeTest(Max, gpuNcite, outFileGpuUsageNcite, true);
+	std::cout << "stop time test for gpusieve after ncite.\n";*/
+
+	return 0;
 }

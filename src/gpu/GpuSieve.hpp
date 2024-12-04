@@ -19,7 +19,7 @@ public:
 
 private:
     unsigned int maxLimit_;
-    std::unique_ptr isPrimeListHost_;
+    std::unique_ptr<bool[]> isPrimeListHost_;
     std::vector<unsigned int> primes_;
 
     std::vector<uint64_t> sieveCpuPrep_(uint64_t maxNumber);

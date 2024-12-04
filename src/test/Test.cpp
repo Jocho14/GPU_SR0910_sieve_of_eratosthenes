@@ -9,6 +9,7 @@
 #include <vector>
 #include <atomic>
 #include <numeric>
+#include <nvml.h>
 
 float calculateCpuUsage(FILETIME prev_idle, FILETIME prev_kernel, FILETIME prev_user,
     FILETIME idle, FILETIME kernel, FILETIME user) {
@@ -87,7 +88,7 @@ void Test::runTimeTest(unsigned int max, std::shared_ptr<ISieve> sieve, std::ofs
 }
 
 
-void Test::runUsageTest(unsigned int max, std::shared_ptr<ISieve> sieve, std::ofstream& outFile) {
+void Test::runUsageTest(unsigned int max, std::shared_ptr<ISieve> sieve, std::ofstream& outFile, bool monitor_gpu) {
     if (!sieve) {
         std::cerr << "Sieve pointer is null!" << std::endl;
         return;
@@ -96,46 +97,92 @@ void Test::runUsageTest(unsigned int max, std::shared_ptr<ISieve> sieve, std::of
     sieve->setMaxLimit(max);
 
     std::vector<float> cpu_usage_data;
+    std::vector<float> gpu_utilization_data;
     std::atomic<bool> stop_flag = false;
+    std::thread monitor_thread;
 
-    // Wątek monitorujący CPU
-    std::thread monitor_thread([&cpu_usage_data, &stop_flag]() {
-        FILETIME prev_idle, prev_kernel, prev_user;
-        FILETIME idle, kernel, user;
-
-        GetSystemTimes(&prev_idle, &prev_kernel, &prev_user);
-
-        bool initialized = false;
-
-        while (!stop_flag) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            GetSystemTimes(&idle, &kernel, &user);
-
-            if (initialized) {
-                float cpu_usage = calculateCpuUsage(prev_idle, prev_kernel, prev_user, idle, kernel, user);
-                cpu_usage_data.push_back(cpu_usage);
-            }
-            else {
-                initialized = true;
+    if (monitor_gpu) {
+        /*monitor_thread = std::thread([&gpu_utilization_data, &stop_flag]() {
+            nvmlReturn_t result = nvmlInit();
+            if (result != NVML_SUCCESS) {
+                std::cerr << "Failed to initialize NVML: " << nvmlErrorString(result) << std::endl;
+                return;
             }
 
-            prev_idle = idle;
-            prev_kernel = kernel;
-            prev_user = user;
-        }
-        });
+            nvmlDevice_t device;
+            result = nvmlDeviceGetHandleByIndex(0, &device);
+            if (result != NVML_SUCCESS) {
+                std::cerr << "Failed to get handle for device 0: " << nvmlErrorString(result) << std::endl;
+                nvmlShutdown();
+                return;
+            }
 
+            while (!stop_flag) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                nvmlUtilization_t utilization;
+
+                result = nvmlDeviceGetUtilizationRates(device, &utilization);
+                if (result == NVML_SUCCESS) {
+                    gpu_utilization_data.push_back(utilization.gpu);
+                }
+            }
+            nvmlShutdown();
+
+            });*/
+    }
+    else
+    {
+        monitor_thread = std::thread([&cpu_usage_data, &stop_flag]() {
+            FILETIME prev_idle, prev_kernel, prev_user;
+            FILETIME idle, kernel, user;
+
+            GetSystemTimes(&prev_idle, &prev_kernel, &prev_user);
+
+            bool initialized = false;
+
+            while (!stop_flag) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                GetSystemTimes(&idle, &kernel, &user);
+
+                if (initialized) {
+                    float cpu_usage = calculateCpuUsage(prev_idle, prev_kernel, prev_user, idle, kernel, user);
+                    std::cout << "CPU Usage: " << cpu_usage << "%" << std::endl;
+                    cpu_usage_data.push_back(cpu_usage);
+                }
+                else {
+                    initialized = true;
+                }
+
+                prev_idle = idle;
+                prev_kernel = kernel;
+                prev_user = user;
+            }
+            });
+    }
+
+   
     timer_->start();
     sieve->computePrimes();
     timer_->stop();
 
     stop_flag = true;
     monitor_thread.join();
-
+   
     outFile << "Time taken for n=" << max << ": " << timer_->getTime() << "ms\n";
-    outFile << "CPU Usage Data:\n";
-    for (const auto& usage : cpu_usage_data) {
-        outFile << usage << "%\n";
+
+    if (monitor_gpu) {
+        outFile << "GPU Utilization Data:\n";
+        for (const auto& gpu_usage : gpu_utilization_data) {
+            outFile << gpu_usage << "%\n";
+        }
+    }
+    else
+    {
+        outFile << "CPU Usage Data:\n";
+        for (const auto& usage : cpu_usage_data) {
+            std::cout << usage << std::endl;
+            outFile << usage << "%\n";
+        }
     }
 
     timer_.reset();
