@@ -9,7 +9,8 @@
 #include <vector>
 #include <atomic>
 #include <numeric>
-#include <nvml.h>
+//#include <nvml.h>
+#include <mutex>
 
 float calculateCpuUsage(FILETIME prev_idle, FILETIME prev_kernel, FILETIME prev_user,
     FILETIME idle, FILETIME kernel, FILETIME user) {
@@ -100,6 +101,8 @@ void Test::runUsageTest(unsigned int max, std::shared_ptr<ISieve> sieve, std::of
     std::vector<float> gpu_utilization_data;
     std::atomic<bool> stop_flag = false;
     std::thread monitor_thread;
+    std::mutex data_mutex;
+
 
     if (monitor_gpu) {
         /*monitor_thread = std::thread([&gpu_utilization_data, &stop_flag]() {
@@ -132,25 +135,20 @@ void Test::runUsageTest(unsigned int max, std::shared_ptr<ISieve> sieve, std::of
     }
     else
     {
-        monitor_thread = std::thread([&cpu_usage_data, &stop_flag]() {
+        monitor_thread = std::thread([&cpu_usage_data, &stop_flag, &data_mutex]() {
             FILETIME prev_idle, prev_kernel, prev_user;
             FILETIME idle, kernel, user;
 
             GetSystemTimes(&prev_idle, &prev_kernel, &prev_user);
 
-            bool initialized = false;
-
             while (!stop_flag) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 GetSystemTimes(&idle, &kernel, &user);
 
-                if (initialized) {
-                    float cpu_usage = calculateCpuUsage(prev_idle, prev_kernel, prev_user, idle, kernel, user);
-                    std::cout << "CPU Usage: " << cpu_usage << "%" << std::endl;
+                float cpu_usage = calculateCpuUsage(prev_idle, prev_kernel, prev_user, idle, kernel, user);
+                {
+                    std::lock_guard<std::mutex> lock(data_mutex);
                     cpu_usage_data.push_back(cpu_usage);
-                }
-                else {
-                    initialized = true;
                 }
 
                 prev_idle = idle;
@@ -159,31 +157,23 @@ void Test::runUsageTest(unsigned int max, std::shared_ptr<ISieve> sieve, std::of
             }
             });
     }
-
    
-    timer_->start();
     sieve->computePrimes();
-    timer_->stop();
-
     stop_flag = true;
     monitor_thread.join();
    
-    outFile << "Time taken for n=" << max << ": " << timer_->getTime() << "ms\n";
 
     if (monitor_gpu) {
-        outFile << "GPU Utilization Data:\n";
         for (const auto& gpu_usage : gpu_utilization_data) {
-            outFile << gpu_usage << "%\n";
+            std::cout << gpu_usage << std::endl;
+            outFile << gpu_usage << ";";
         }
     }
     else
     {
-        outFile << "CPU Usage Data:\n";
         for (const auto& usage : cpu_usage_data) {
             std::cout << usage << std::endl;
-            outFile << usage << "%\n";
+            outFile << usage << ";";
         }
     }
-
-    timer_.reset();
 }

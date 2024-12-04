@@ -15,8 +15,8 @@ int main()
 
 	auto single = std::make_shared<SingleCpuSieve>(42949);
 	auto multi = std::make_shared<MultiCpuSieve>(42949);
-	auto gpu = std::make_shared<GpuSieve>(42949);
 	std::ofstream outFileSingleTime("singleTime.csv");
+	std::ofstream outFileSingleUsage("singleUsage.csv");
 	std::ofstream outFileMultiTime("multiTime.csv");
 
 	/*const unsigned int Max = 4294967285;*/
@@ -24,7 +24,9 @@ int main()
 
 	auto test = std::make_shared<Test>();
 
-	test->runTimeTest(Max, single, outFileSingleTime);
+	//test->runTimeTest(Max, single, outFileSingleTime);
+
+	test->runUsageTest(1000000000, single, outFileSingleUsage,false);
 
 	return 0;
 }
