@@ -9,7 +9,7 @@
 #include <vector>
 #include <atomic>
 #include <numeric>
-//#include <nvml.h>
+#include <nvml.h>
 #include <mutex>
 
 float calculateCpuUsage(FILETIME prev_idle, FILETIME prev_kernel, FILETIME prev_user,
@@ -62,17 +62,15 @@ void Test::runTimeTest(unsigned int max, std::shared_ptr<ISieve> sieve, std::ofs
     };
 
     for (const auto& value : values) {
-        std::cout << "Przetwarzanie wartości: " << value << std::endl;
         try {
             sieve->setMaxLimit(value);
             for (int i = 0; i < 10; ++i) {
-                std::cout << "Iteracja: " << i << " dla wartości " << value << std::endl;
+
                 timer_->start();
                 sieve->computePrimes();
                 timer_->stop();
 
                 double elapsed = timer_->getTime();
-                std::cout << "Czas: " << elapsed << std::endl;
 
                 outFile << value << ";" << elapsed << ";";
                 timer_->reset();
@@ -105,7 +103,7 @@ void Test::runUsageTest(unsigned int max, std::shared_ptr<ISieve> sieve, std::of
 
 
     if (monitor_gpu) {
-        /*monitor_thread = std::thread([&gpu_utilization_data, &stop_flag]() {
+        monitor_thread = std::thread([&gpu_utilization_data, &stop_flag]() {
             nvmlReturn_t result = nvmlInit();
             if (result != NVML_SUCCESS) {
                 std::cerr << "Failed to initialize NVML: " << nvmlErrorString(result) << std::endl;
@@ -121,7 +119,7 @@ void Test::runUsageTest(unsigned int max, std::shared_ptr<ISieve> sieve, std::of
             }
 
             while (!stop_flag) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 nvmlUtilization_t utilization;
 
                 result = nvmlDeviceGetUtilizationRates(device, &utilization);
@@ -131,7 +129,7 @@ void Test::runUsageTest(unsigned int max, std::shared_ptr<ISieve> sieve, std::of
             }
             nvmlShutdown();
 
-            });*/
+            });
     }
     else
     {
@@ -142,7 +140,7 @@ void Test::runUsageTest(unsigned int max, std::shared_ptr<ISieve> sieve, std::of
             GetSystemTimes(&prev_idle, &prev_kernel, &prev_user);
 
             while (!stop_flag) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 GetSystemTimes(&idle, &kernel, &user);
 
                 float cpu_usage = calculateCpuUsage(prev_idle, prev_kernel, prev_user, idle, kernel, user);
